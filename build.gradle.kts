@@ -36,7 +36,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.2")
 
     //implementation("org.springframework.experimental:spring-native:0.9.0-SNAPSHOT")
-    implementation("org.springframework.experimental:spring-graalvm-native:0.8.5")
+    //implementation("org.springframework.experimental:spring-graalvm-native:0.8.5")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
