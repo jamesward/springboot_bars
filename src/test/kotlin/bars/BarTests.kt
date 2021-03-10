@@ -18,7 +18,7 @@ class BarTests(@Autowired val barRepository: BarRepository) {
 
     @Test
     fun `count must be 1`(): Unit = runBlocking {
-        (barRepository.count().awaitFirst() == 1L)
+        assert(barRepository.count().awaitFirst() == 1L)
     }
 
 }
