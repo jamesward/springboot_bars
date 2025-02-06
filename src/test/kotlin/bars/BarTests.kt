@@ -14,7 +14,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 
 @Configuration
 @Testcontainers
-class RedisTestConfiguration {
+class PostgresTestConfiguration {
     @Bean
     @ServiceConnection
     @RestartScope
