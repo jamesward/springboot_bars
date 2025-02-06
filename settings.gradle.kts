@@ -3,6 +3,17 @@ rootProject.name = "springboot_bars"
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        maven("https://repo.spring.io/snapshot")
+        mavenCentral()
     }
+}
+
+@Suppress("UnstableApiUsage")
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
 }

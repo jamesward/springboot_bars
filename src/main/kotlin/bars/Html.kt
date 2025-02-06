@@ -6,9 +6,9 @@ import org.w3c.dom.Document
 
 object Html {
 
-    val indexHTML: HTML.() -> Unit = {
+    private val indexHTML: HTML.() -> Unit = {
         head {
-            link("/webjars/bootstrap/4.5.3/css/bootstrap.min.css", LinkRel.stylesheet)
+            link("/webjars/bootstrap/css/bootstrap.min.css", LinkRel.stylesheet)
             link("/assets/index.css", LinkRel.stylesheet)
             script(ScriptType.textJavaScript) {
                 src = "/assets/index.js"
