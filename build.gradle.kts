@@ -1,13 +1,15 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent.*
 
 plugins {
-    application
     kotlin("jvm") version "2.1.10"
     kotlin("plugin.spring") version "2.1.10"
     id("org.springframework.boot") version "3.4.2"
     id("io.spring.dependency-management") version "1.1.7"
-    id("org.graalvm.buildtools.native") version "0.10.4"
+    // todo: enable aot
+//    id("org.graalvm.buildtools.native") version "0.10.4"
 }
+
+group = "com.jamesward"
 
 kotlin {
     jvmToolchain(21)
@@ -25,6 +27,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.12.0")
     runtimeOnly("org.webjars:webjars-locator-lite:1.0.1")
 
+    runtimeOnly("com.amazonaws.serverless:aws-serverless-java-container-springboot3:2.1.2")
 
     testImplementation("org.springframework.boot:spring-boot-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
@@ -45,6 +48,12 @@ tasks.withType<Test> {
     }
 }
 
-application {
-    mainClass.set("bars.MainKt")
+
+// exclude the tomcat jars from going into the lambda, but only on `sam build`
+configurations {
+    runtimeClasspath {
+        if (System.getProperty("software.amazon.aws.lambdabuilders.scratch-dir") != null) {
+            exclude("org.apache.tomcat.embed")
+        }
+    }
 }

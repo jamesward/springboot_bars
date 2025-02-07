@@ -1,0 +1,7 @@
+{
+  "Parameters": {
+    "SPRING_DATASOURCE_URL": "jdbc:postgresql://host.docker.internal/postgres",
+    "SPRING_DATASOURCE_USERNAME": "postgres",
+    "SPRING_DATASOURCE_PASSWORD": "password"
+  }
+}

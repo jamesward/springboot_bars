@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: SAM template for Spring Boot application with API Gateway and Aurora Serverless
+
+Parameters:
+  DatabaseUsername:
+    Type: String
+    Default: admin
+  DatabasePassword:
+    Type: String
+    NoEcho: true
+
+Resources:
+  # VPC for Aurora
+  ApplicationVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: ApplicationVPC
+
+  # Private Subnets
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ApplicationVPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ApplicationVPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+
+  # DB Subnet Group
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for Aurora
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+
+  # Security Group for Aurora
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Aurora cluster
+      VpcId: !Ref ApplicationVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref LambdaSecurityGroup
+
+  # Security Group for Lambda
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Lambda function
+      VpcId: !Ref ApplicationVPC
+
+  # Aurora Serverless Cluster
+  AuroraServerlessCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora-postgresql
+      EngineMode: serverless
+      DatabaseName: !Ref DatabaseName
+      MasterUsername: !Ref DatabaseUsername
+      MasterUserPassword: !Ref DatabasePassword
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VpcSecurityGroupIds:
+        - !Ref DatabaseSecurityGroup
+      ScalingConfiguration:
+        MinCapacity: 2
+        MaxCapacity: 4
+        AutoPause: true
+        SecondsUntilAutoPause: 300
+
+  # Lambda Function
+  SpringBootFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: com.amazonaws.serverless.proxy.spring.SpringDelegatingLambdaContainerHandler
+      Runtime: java21
+      MemorySize: 2048
+      Timeout: 30
+      CodeUri: .
+      Environment:
+        Variables:
+          MAIN_CLASS: bars.Main
+          SPRING_DATASOURCE_URL: !Sub 'jdbc:postgresql://${AuroraServerlessCluster.Endpoint}:${AuroraServerlessCluster.Port}/${DatabaseName}'
+          SPRING_DATASOURCE_USERNAME: !Ref DatabaseUsername
+          SPRING_DATASOURCE_PASSWORD: !Ref DatabasePassword
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+      Events:
+        RootEndpoint:
+          Type: Api
+          Properties:
+            Path: /
+            Method: GET
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  ApiUrl:
+    Description: URL of the API Gateway endpoint
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/'
+  DatabaseEndpoint:
+    Description: Aurora Serverless Cluster Endpoint
+    Value: !GetAtt AuroraServerlessCluster.Endpoint
+  DatabasePort:
+    Description: Aurora Serverless Cluster Port
+    Value: !GetAtt AuroraServerlessCluster.Port

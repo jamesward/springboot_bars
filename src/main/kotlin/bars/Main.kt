@@ -19,7 +19,7 @@ interface BarRepository: CrudRepository<Bar, Long>
 
 @SpringBootApplication
 @RestController
-class WebApp(@Autowired val barRepository: BarRepository) {
+class Main(@Autowired val barRepository: BarRepository) {
 
     @GetMapping("/")
     fun index(): String = run {
@@ -38,5 +38,5 @@ class WebApp(@Autowired val barRepository: BarRepository) {
 }
 
 fun main(args: Array<String>) {
-    runApplication<WebApp>(*args)
+    runApplication<Main>(*args)
 }
