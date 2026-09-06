@@ -2,7 +2,6 @@ package bars
 
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.html.dom.serialize
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -28,7 +27,7 @@ class WebApp {
         GET("/") {
             ServerResponse.ok()
                 .contentType(MediaType.TEXT_HTML)
-                .bodyValueAndAwait(Html.index.serialize(true))
+                .renderAndAwait("bars/index")
         }
         GET("/bars") {
             ServerResponse.ok().bodyAndAwait(barRepository.findAll().asFlow())

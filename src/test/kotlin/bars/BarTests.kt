@@ -10,10 +10,9 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Testcontainers
 
 @Configuration
-@Testcontainers
+//@Testcontainers
 class PostgresTestConfiguration {
     @Bean
     @ServiceConnection
